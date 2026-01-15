@@ -61,3 +61,55 @@ In production, whenever <Link> components appear in the browser's viewport, Next
 usePathname() = a react hook that Next.js can use to check the current path and implement showing an active link to indicate to the user what page they are currently on.
 NB: Since usePathname() is a React hook, you'll need to turn nav-links.tsx into a Client Component. Add React's "use client" directive to the top of the file, then import usePathname() from next/navigation
 
+How to fetch data;
+1. API Layer = if you're using 3rd party services that provide an API
+            if you're fetching data from the client, to avoid exposing your database secrets to the client
+
+2. Database queries = when creating API endpoints, you need to write logic to interact with your database.
+            if you're using react server components, you can skip the API layer, and query your database directly without risking exposing your database secrets to the client.
+
+By default, Next.js applications use React Server Components.
+i)Server Components support JavaScript Promises, providing a solution for asynchronous tasks like data fetching natively. You can use async/await syntax without needing useEffect, useState or other data fetching libraries.
+ii) Server Components run on the server, so you can keep expensive data fetches and logic on the server, only sending the result to the client.
+iii) Since Server Components run on the server, you can query the database directly without an additional API layer. This saves you from writing and maintaining additional code.
+
+Waterfall = refers to a sequence of network requests that depend on the completion of previous requests.
+In the case of data fetching, each request can only begin once the previous request has returned data.
+Parallel data fetching = a common way to avoid waterfalls.
+By using this pattern, you can:
+Start executing all data fetches at the same time, which is faster than waiting for each request to complete in a waterfall.
+Use a native JavaScript pattern that can be applied to any library or framework.
+However, there is one disadvantage of relying only on this JavaScript pattern: what happens if one data request is slower than all the others ? Your application is only as fast as your slowest data fetch. It delays loading the UI to the visitor until the data is fetched.
+
+Static rendering = data fetching and rendering happens on the server at build time or when revalidating data.
+Benefits of static rendering: Faster websites, Reduced Server Load, Better SEO
+Dynamic rendering = content is rendered on the server for each user at request time (when the user visits the page). 
+Benefits of dynamic rendering: Real-Time Data, User-Specific Content, Request Time Information
+
+Streaming = data transfer technique that allows you to break down a route into smaller "chunks" and progressively stream them from the server to the client as they become ready.
+It prevents slow data requests from blocking your whole page.
+There are two ways you implement streaming in Next.js:
+At the page level, with the loading.tsx file (which creates <Suspense> for you).
+At the component level, with <Suspense> for more granular control.
+
+loading.tsx = a nextjs file built on top of React Suspensee. It allows you to create fallback UI to show as a replacement while page content loads.
+Since <SideNav> is static, it is shown immediately. The user can interact with it while the dynamic content is loading. They don't have to wait for the page to finish loading before navigating away(this is called interruptable navigation)
+Loading skeletons = simplified versions of the UI.
+
+Route groups allow you to organize files into logical groups withouut affecting the URL path structure. When you create a new folder using (), the name won't be included in the URL path. So /dashboard/(overview)/page.tsx becomes /dashboard
+
+Suspense allows you to defer rendering parts of your application until some condition is met (e.g. data is loaded). You can wrap your dynamic components in Suspense. Then, pass it a fallback component to show while the dynamic component loads.
+
+Grouping Components = You can fetch data for each individual card, but this could lead to a popping effect as the cards load in, this can be visually jarring for the user.
+So, how would you tackle this problem?
+To create more of a staggered effect, you can group the cards using a wrapper component. This means the static <SideNav/> will be shown first, followed by the cards, etc.
+
+Where you place your Suspense boundaries will depend on a few things:
+How you want the user to experience the page as it streams.
+What content you want to prioritize.
+If the components rely on data fetching.
+By moving data fetching down to the components that need it, you can create more granular Suspense boundaries. This allows you to stream specific components and prevent the UI from blocking.
+
+
+
+
