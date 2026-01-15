@@ -1,0 +1,63 @@
+pnpm - this is the preferred package manager for next.js
+npm install -g pnpm
+npx create-next-app@latest 'file name' //Agree to use tailwind it autoinstalls the tailwind files.
+pnpm i = to install the next.js config files
+pnpm dev = to start the developmet server on localhost:3000
+
+Layout.js is the root file
+/app = Contains all the routes, components and logic for the application.
+/app/lib = Contains functions used in the application, such as reusable utility functions and data fetching functions
+/app/ui = Contains all the UI components for your application such as cards, tables and forms
+/public = Contains all the static assets for your application, such as images and the favicon
+
+Use tailwind, css to style the application
+clsx - a library that lets you toggle class names easily.{https://github.com/lukeed/clsx}
+import clsx from 'clsx';
+ 
+export default function InvoiceStatus({ status }: { status: string }) {
+  return (
+    <span
+      className={clsx(
+        'inline-flex items-center rounded-full px-2 py-1 text-sm',
+        {
+          'bg-gray-100 text-gray-500': status === 'pending',
+          'bg-green-500 text-white': status === 'paid',
+        },
+      )}
+    >
+    // ...
+)}
+
+next/font = module that allows NextJS to automatically optimize fonts in the application. It downloads font files at build time and hosts them with your other static assets. It therefore ensures no additional network requests for fonts which would impact performance.
+import { Inter } from 'next/font/google';
+export const inter = Inter({ subsets: ['latin'] });
+Add the font to the body to apply{/app/layout.tsx}
+import { inter } from '@/app/ui/fonts';
+<body className={`${inter.className} antialiased`}>{children}</body>
+antialiased class in tailwind smoothes out the font but not necessary.
+
+next/image = automatically optimize your images
+<Image> = Preventing layout shift automatically when images are loading.
+        Resizing images to avoid shipping large images to devices with a smaller viewport.
+        Lazy loading images by default (images load as they enter the viewport).
+        Serving images in modern formats, like WebP and AVIF, when the browser supports it.
+className="hidden md:block" this is to remove the image from the DOM on mobile screens and to show the image on desktop screens.
+
+Nextjs uses file-system routing where folders are used to create nested routes. Each folder represents a route segment that maps to a URL segment.
+using layout.tsx and page.tsx you can create separate UI's for each route.
+page.tsx is a special Next.js file that exports a React component, and it's required for the route to be accessible.
+layout.tsx allows creation of a UI such as a dashboard that is shared between multiple pages.
+
+<SideNav /> = Any components you import into this file will be part of the layout.
+The <Layout /> component receives a children prop. This child can either be a page or another layout.
+
+The advantage of using layouts in Next.js is that on navigation, only the page components update while the layout won't re-render.
+
+next/link = a component that wraps anchor tags to handle client-side navigation between routes.
+<Link> = it is used in replace of <a> allows navigation between pages without doing a full refresh.
+Automatic code-splitting = means that pages become isolated. If a certain page throws an error, the rest of the application still works.
+In production, whenever <Link> components appear in the browser's viewport, Next.js automatically prefetches the code for the linked route in the background. By the time the user clicks the link, the code for the destination page will be loaded in the background, this makes the page transition near-instant.
+
+usePathname() = a react hook that Next.js can use to check the current path and implement showing an active link to indicate to the user what page they are currently on.
+NB: Since usePathname() is a React hook, you'll need to turn nav-links.tsx into a Client Component. Add React's "use client" directive to the top of the file, then import usePathname() from next/navigation
+
