@@ -4,6 +4,8 @@
 - [Setup & Installation](#setup--installation)
 - [Project Structure](#project-structure)
 - [Key Concepts](#key-concepts)
+- [Course Roadmap (Chapters)](#course-roadmap-chapters)
+- [Route Blueprint (Step-by-Step)](#route-blueprint-step-by-step)
 - [Authentication](#authentication)
 - [Routing](#routing)
 - [Metadata](#metadata)
@@ -111,17 +113,178 @@ pnpm dev
 - Can be used at page or component level
 - Helps create better loading experiences
 
+## Course Roadmap (Chapters)
+
+Use this as the "table of contents" for how to build any new route (Customers, Reports, Settings, etc.) using the same patterns you used for Invoices.
+
+### Introduction
+- What you are building
+- What the folder structure means (`app/`, `app/lib/`, `app/ui/`)
+
+### Chapter 1: Getting Started
+- Run the project (`pnpm dev`)
+- Confirm environment variables exist (`POSTGRES_URL`, auth secrets)
+
+### Chapter 2: CSS Styling
+- Tailwind usage patterns
+- Reusing existing UI components in `app/ui/`
+
+### Chapter 3: Optimizing Fonts and Images
+- `next/font` (see `app/ui/fonts`)
+- `next/image` (used in `app/ui/customers/table.tsx`)
+
+### Chapter 4: Creating Layouts and Pages
+- Page entry points live in `app/**/page.tsx`
+- Shared layout patterns live in `app/**/layout.tsx`
+
+### Chapter 5: Navigating Between Pages
+- Use `next/link` for navigation
+- Keep URL state in `searchParams` for search/pagination
+
+### Chapter 6: Setting Up Your Database
+- Database connection via `postgres` in `app/lib/data.ts` and `app/lib/actions.ts`
+
+### Chapter 7: Fetching Data
+- Fetch in Server Components (pages + server components)
+- Core queries in `app/lib/data.ts` (example: `fetchFilteredCustomers`, `fetchFilteredInvoices`)
+
+### Chapter 8: Static and Dynamic Rendering
+- Decide when a page should be dynamic (depends on request data like `searchParams`)
+
+### Chapter 9: Streaming
+- Wrap slow parts in `<Suspense fallback={...}>` to stream UI
+- Add `loading.tsx` for route-level fallback
+
+### Chapter 10: Adding Search and Pagination
+- Put the query in the URL (e.g. `?query=...&page=...`)
+- Re-fetch on navigation to keep UI in sync
+
+### Chapter 11: Mutating Data
+- Use Server Actions in `app/lib/actions.ts`
+- Use `useFormState` / `useActionState` on the client
+- Revalidate/redirect with `revalidatePath` + `redirect`
+
+### Chapter 12: Handling Errors
+- Add `error.tsx` per route segment
+- Throw errors in data functions when you want the error boundary to catch them
+
+### Chapter 13: Improving Accessibility
+- Use labels, `aria-describedby`, and `aria-live` for form errors
+- Ensure images have meaningful `alt` text
+
+### Chapter 14: Adding Authentication
+- Credentials auth lives in `auth.ts`
+- Route protection is configured in `auth.config.ts` (authorized callback)
+
+### Chapter 15: Adding Metadata
+- Global metadata in `app/layout.tsx`
+- Route/page metadata in each `page.tsx` via `export const metadata`
+
+## Route Blueprint (Step-by-Step)
+
+This is the repeatable recipe to build any new dashboard route.
+
+### 1) Create the route shell
+- Create or update `app/dashboard/<route>/page.tsx`
+- Keep it as a Server Component by default
+
+### 2) Decide what state lives in the URL
+- **Search**: `searchParams.query`
+- **Pagination**: `searchParams.page`
+- Anything that changes what data you fetch should usually be reflected in the URL
+
+### 3) Add data functions in `app/lib/data.ts`
+- Follow the existing patterns:
+  - Invoices: `fetchFilteredInvoices(query, currentPage)` + `fetchInvoicesPages(query)`
+  - Customers: `fetchFilteredCustomers(query)`
+
+### 4) Build UI components in `app/ui/<route>/`
+- Keep presentational components here
+- Prefer server components for table rendering when possible
+
+### 5) Add streaming/loading
+- Use `<Suspense>` in the page to stream slow components
+- Add `app/dashboard/<route>/loading.tsx` if you want a route-level loading UI
+
+### 6) Add error handling
+- Add `app/dashboard/<route>/error.tsx` for route-level errors
+- Throw from data functions to trigger it
+
+### 7) Add mutations (if needed)
+- Add Server Actions in `app/lib/actions.ts`
+- Revalidate + redirect on success
+- Return validation errors as state for forms
+
+### 8) Add accessibility
+- `aria-live` for dynamic error output
+- `aria-describedby` to connect inputs to error/help text
+
+### 9) Add auth + metadata
+- Confirm route is protected (anything under `/dashboard`)
+- Add `export const metadata` for the page title
+
+---
+
+## Worked Example: Customers Page (Step-by-Step)
+
+Goal: turn `app/dashboard/customers/page.tsx` (currently a placeholder) into a full customers page using your existing query + UI table.
+
+### Step 1: Confirm the building blocks already exist
+- **Data**: `app/lib/data.ts` already has `fetchFilteredCustomers(query)`.
+- **UI**: `app/ui/customers/table.tsx` already renders the customers table and includes the shared `<Search />` component (`app/ui/search.tsx`).
+- **Route**: `app/dashboard/customers/page.tsx` currently renders only `Customers Page`.
+
+### Step 2: Implement `app/dashboard/customers/page.tsx`
+- Make the page `async` so it can fetch data.
+- Read URL state from `searchParams`:
+  - `query`: default to `''`
+- Fetch data:
+  - `const customers = await fetchFilteredCustomers(query)`
+- Render:
+  - `<CustomersTable customers={customers} />`
+
+### Step 3: Add streaming (recommended)
+- Wrap the table in `<Suspense>`.
+- Fallback:
+  - If you don't have a customers-specific skeleton yet, either:
+    - Reuse `InvoicesTableSkeleton` from `app/ui/skeletons.tsx`, or
+    - Create a customers skeleton later.
+
+### Step 4: Add route metadata
+- In `app/dashboard/customers/page.tsx`:
+  - `export const metadata = { title: 'Customers' }`
+
+### Step 5: Add route error handling (recommended)
+- Create `app/dashboard/customers/error.tsx`.
+- Keep it simple:
+  - Show a message
+  - Provide a “Try again” button that calls `reset()`
+
+### Step 6: Confirm search works end-to-end
+- `app/ui/search.tsx` updates the URL:
+  - sets `query`
+  - resets `page` to `1`
+- Because `page.tsx` reads `searchParams`, it will refetch customers automatically.
+
+### Step 7: Confirm navigation entry exists
+- Check `app/ui/dashboard/nav-links.tsx` has a link to `/dashboard/customers`.
+
+### After Customers: reuse the same blueprint
+- Replace the data function
+- Replace the table component
+- Keep the patterns (searchParams -> data.ts -> UI table -> Suspense/loading -> error.tsx -> metadata/auth)
+
 ## Authentication
 
 ### Setup
 - Uses NextAuth.js with Credentials Provider
-- Protected routes via middleware
+- Protected routes via `proxy.ts` matcher (NextAuth middleware)
 - Session management with JWT
 
 ### Key Files
 - `auth.config.ts`: Auth configuration
 - `auth.ts`: Auth setup with NextAuth
-- `middleware.ts`: Route protection
+- `proxy.ts`: Route protection matcher + `auth` middleware export
 - `app/login/page.tsx`: Login page
 - `app/ui/login-form.tsx`: Login form component
 
@@ -185,7 +348,7 @@ export async function createInvoice(prevState: State, formData: FormData) {
 ## Database
 
 ### Schema
-- Uses PostgreSQL with Prisma
+- Uses PostgreSQL via the `postgres` package
 - Main tables: `invoices`, `customers`, `users`
 - Relations between tables for data integrity
 
