@@ -184,14 +184,106 @@ reset: This is a function to reset the error boundary. When executed, the functi
 
 Another way you can handle errors gracefully is by using the notFound function. While error.tsx is useful for catching uncaught exceptions, notFound can be used when you try to fetch a resource that doesn't exist.
 
+Accessibility = designing and implementing web applications that everyone can use, including those with disabilities.
+
+NextJS's ESLint configuration includes the eslint-plugin-jsx-ally plugin which helps catch accessibility issues early. 
+pnpm add -D eslint eslint-config-next
+pnpm lint 
+While adding and configuring a linter is not a required step, it can be helpful to catch accessibility issues in your development process.
+
+Improving form accessibility:
+i) Semantic HTML
+ii) Labelling
+iii) Focus Outline
+
+Form Validation
+i) Client-side validation
+ii) Server-side validation
+
+In the code above, you're also adding the following aria labels:
+
+aria-describedby="customer-error": This establishes a relationship between the select element and the error message container. It indicates that the container with id="customer-error" describes the select element. Screen readers will read this description when the user interacts with the select box to notify them of errors.
+id="customer-error": This id attribute uniquely identifies the HTML element that holds the error message for the select input. This is necessary for aria-describedby to establish the relationship.
+aria-live="polite": The screen reader should politely notify the user when the error inside the div is updated. When the content changes (e.g. when a user corrects an error), the screen reader will announce these changes, but only when the user is idle so as not to interrupt them.
+
+AUTHENTICATION
+It is how a system checks if the user is who they say they are.
+Authorization determines what a user can access.
+NextAuth.js is used to add authentication to the applciation.
+pnpm i next-auth@beta
+
+The {authorized} callback is used to verify if thhe requeest is authorized to access a page with Next.js Proxy.It is called before a request is completed, and it receives an object with the auth and request properties. The auth property contains the user's session, and the request property contains the incoming request.
+
+The {unauthorized} callback is used to handle unauthorized requests. It is called when a request is not authorized, and it receives an object with the auth and request properties. The auth property contains the user's session, and the request property contains the incoming request.
+The {providers} option is an array where you list different login options. For now, it's an empty array to satisfy NextAuth config. You'll learn more about it in the Adding the Credentials provider section.
 
 
+The advantage of employing Proxy for this task is that the protected routes will not even start rendering until the Proxy verifies the authentication, enhancing both the security and performance of your application.
 
+Password Hashing - converts a password into a fixed-length string of characters, which appears random, providing a layer of security even if the user's data is exposed.
+bcrypt - to hash the user's password before storing it in the databas. You will use it again later to compare that the password entered by the user matches the one in the database.
 
+Good to know:
 
+There are other alternative providers such as OAuth or email. See the NextAuth.js docs for a full list of options.
 
+MetaDATA
+- In web development, metadata provides additional details about a webpage. Metadata is not visible to the users visiting the page. Instead, it works behind the scenes, embedded within the page's HTML, usually within the <head> element. This hidden information is crucial for search engines and other systems that need to understand your webpage's content better.
+- It plays an important role in enhancing a webpage's SEO, making it more accessible and understandable for search engines and social media platforms.
+- Proper metadata helps search engines effectively index webpages, improving their ranking in search results. Additionally, metadata like Open Graph improves the appearance of shared links on social media, making the content more appealing and informative for users.
 
+<meta name="keywords" content="keyword1, keyword2, keyword3" /> = Keyword Metadata: This metadata includes the keywords related to the webpage content, helping search engines index the page.
+Open Graph Metadata: This metadata enhances the way a webpage is represented when shared on social media platforms, providing information such as the title, description, and preview image.
+<meta property="og:title" content="Title Here" />
+<meta property="og:description" content="Description Here" />
+<meta property="og:image" content="image_url_here" />
+Favicon Metadata: This metadata links the favicon (a small icon) to the webpage, displayed in the browser's address bar or tab.
+<link rel="icon" href="path/to/favicon.ico" />
 
+Config-based: Export a static metadata object or a dynamic generateMetadata function in a layout.js or page.js file.
+File-based: Next.js has a range of special files that are specifically used for metadata purposes:
+favicon.ico, apple-icon.jpg, and icon.jpg: Utilized for favicons and icons
+opengraph-image.jpg and twitter-image.jpg: Employed for social media images
+robots.txt: Provides instructions for search engine crawling
+sitemap.xml: Offers information about the website's structure
 
+Page title and descriptions
+You can also include a metadata object from any layout.js or page.js file to add additional page information like title and description. Any metadata in layout.js will be inherited by all pages that use it.
+Next.js will automatically add the title and metadata to your application.
 
+But what if you want to add a custom title for a specific page? You can do this by adding a metadata object to the page itself. Metadata in nested pages will override the metadata in the parent.
+For example, in the /dashboard/invoices page, you can update the page title:
+
+/app/dashboard/invoices/page.tsx
+import { Metadata } from 'next';
+ 
+export const metadata: Metadata = {
+  title: 'Invoices | Acme Dashboard',
+};
+This works, but we are repeating the title of the application in every page. If something changes, like the company name, you'd have to update it on every page.
+
+Instead, you can use the title.template field in the metadata object to define a template for your page titles. This template can include the page title, and any other information you want to include.
+
+In your root layout, update the metadata object to include a template:
+
+/app/layout.tsx
+import { Metadata } from 'next';
+ 
+export const metadata: Metadata = {
+  title: {
+    template: '%s | Acme Dashboard',
+    default: 'Acme Dashboard',
+  },
+  description: 'The official Next.js Learn Dashboard built with App Router.',
+  metadataBase: new URL('https://next-learn-dashboard.vercel.sh'),
+};
+The %s in the template will be replaced with the specific page title.
+
+Now, in your /dashboard/invoices page, you can add the page title:
+
+/app/dashboard/invoices/page.tsx
+export const metadata: Metadata = {
+  title: 'Invoices',
+};
+Navigate to the /dashboard/invoices page and check the <head> element. You should see the page title is now Invoices | Acme Dashboard.
 
