@@ -11,6 +11,11 @@ Layout.js is the root file
 /public = Contains all the static assets for your application, such as images and the favicon
 
 Use tailwind, css to style the application
+Tailwind is a CSS framework that speeds up the development process by allowing you to quickly write utility classes directly in your React code.
+In Tailwind, you style elements by adding class names. For example, adding "text-blue-500" will turn the <h1> text blue:
+global.css - You can use this file to add CSS rules to all the routes in your application - such as CSS reset rules, site-wide styles for HTML elements like links, and more.
+
+You can import global.css in any component in your application, but it's usually good practice to add it to your top-level component
 clsx - a library that lets you toggle class names easily.{https://github.com/lukeed/clsx}
 import clsx from 'clsx';
  
@@ -28,7 +33,10 @@ export default function InvoiceStatus({ status }: { status: string }) {
     // ...
 )}
 
-next/font = module that allows NextJS to automatically optimize fonts in the application. It downloads font files at build time and hosts them with your other static assets. It therefore ensures no additional network requests for fonts which would impact performance.
+next/font = module that allows NextJS to automatically optimize fonts in the application. 
+It downloads font files at build time and hosts them with your other static assets. 
+It therefore ensures no additional network requests for fonts which would impact performance.
+
 import { Inter } from 'next/font/google';
 export const inter = Inter({ subsets: ['latin'] });
 Add the font to the body to apply{/app/layout.tsx}
@@ -42,6 +50,9 @@ next/image = automatically optimize your images
         Lazy loading images by default (images load as they enter the viewport).
         Serving images in modern formats, like WebP and AVIF, when the browser supports it.
 className="hidden md:block" this is to remove the image from the DOM on mobile screens and to show the image on desktop screens.
+you're setting the width to 1000 and height to 760 pixels. 
+It's good practice to set the width and height of your images to avoid layout shift, these should be an aspect ratio identical to the source image. 
+These values are not the size the image is rendered, but instead the size of the actual image file used to understand the aspect ratio.
 
 Nextjs uses file-system routing where folders are used to create nested routes. Each folder represents a route segment that maps to a URL segment.
 using layout.tsx and page.tsx you can create separate UI's for each route.
@@ -52,8 +63,9 @@ layout.tsx allows creation of a UI such as a dashboard that is shared between mu
 The <Layout /> component receives a children prop. This child can either be a page or another layout.
 
 The advantage of using layouts in Next.js is that on navigation, only the page components update while the layout won't re-render.
+the root layout is required in every Next.js application. Any UI you add to the root layout will be shared across all pages in your application
 
-next/link = a component that wraps anchor tags to handle client-side navigation between routes.
+next/link = a component that wraps anchor tags to handle client-side navigation between routes with JavaScript.
 <Link> = it is used in replace of <a> allows navigation between pages without doing a full refresh.
 Automatic code-splitting = means that pages become isolated. If a certain page throws an error, the rest of the application still works.
 In production, whenever <Link> components appear in the browser's viewport, Next.js automatically prefetches the code for the linked route in the background. By the time the user clicks the link, the code for the destination page will be loaded in the background, this makes the page transition near-instant.
